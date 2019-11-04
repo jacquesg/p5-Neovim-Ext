@@ -1,0 +1,28 @@
+cache:
+ - C:\projects\sources
+
+install:
+ - set SOURCES="C:\projects\sources"
+ - if not exist "%SOURCES%" mkdir "%SOURCES%"
+ - del "%SOURCES%\*.msi"
+
+ # download
+ - set PERL522PACKAGE=strawberry-perl-5.22.3.1-64bit-portable.zip
+
+ - if not exist "%SOURCES%\%PERL522PACKAGE%" curl -fsS -o "%SOURCES%\%PERL522PACKAGE%" http://strawberryperl.com/download/5.22.3.1/%PERL522PACKAGE%
+
+ - set PERL522=C:\projects\perl522
+
+ - 7z x "%SOURCES%\%PERL522PACKAGE%" -o"%PERL522%"
+
+ - set OLDPATH=%PATH%
+ - set PATH=%PERL522%\perl\bin;%PERL522%\perl\site\bin;%PERL522%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Neovim-Ext
+ - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
+ - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
+ - dzil authordeps --missing | cpanm --notest
+ - dzil listdeps --missing | cpanm --notest
+ - perl -V
+
+build_script:
+ - dzil test
