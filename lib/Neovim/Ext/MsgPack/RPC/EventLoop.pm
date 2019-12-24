@@ -211,8 +211,9 @@ sub _on_read_error
 
 	return sub
 	{
+		my ($error) = @_;
 		$loop->stop();
-		die "read error\n";
+		die "handle read error: $error\n";
 	};
 }
 
@@ -228,7 +229,7 @@ sub _on_read_eof
 	return sub
 	{
 		$loop->stop();
-		die "read eof\n";
+		die "handle read eof\n";
 	};
 }
 
