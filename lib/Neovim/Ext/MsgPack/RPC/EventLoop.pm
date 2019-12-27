@@ -226,7 +226,7 @@ sub _on_read_error
 
 	return sub
 	{
-		my ($error) = @_;
+		my (undef, $error) = @_;
 		$loop->stop();
 		die "handle read error: $error\n";
 	};
