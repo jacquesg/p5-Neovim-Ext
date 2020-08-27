@@ -5,32 +5,15 @@ endif
 let s:loaded_perl_provider = 1
 
 function! provider#perl#Detect() abort
-  let prog = ''
-  if exists('g:perl_host_prog')
-    let prog = expand(g:perl_host_prog)
-  endif
-
-  " check if perl is on the path
-  if prog == '' && executable('perl')
-    let prog = 'perl'
+  " use g:perl_host_prof if set or check if perl is on the path
+  let prog = exepath(get(g:, 'perl_host_prog', 'perl'))
+  if empty(prog)
+    return ''
   endif
 
   " if perl is available, make sure the required module is available
-  if prog != ''
-    let args = [prog]
-    if exists('g:perl_host_args')
-      call extend(args, g:perl_host_args)
-    endif
-    call extend(args, ['-MNeovim::Ext', '-e', '"exit 0"'])
-	let cmd = join(args, ' ')
-    let job_id = jobstart(cmd, {'stdout_buffered': v:true})
-    let result = jobwait([job_id])
-	if result[0] != 0
-      let prog = ''
-    endif
-  endif
-
-  return prog
+  call system([prog, '-W', '-MNeovim::Ext', '-e', ''])
+  return v:shell_error ? '' : prog
 endfunction
 
 function! provider#perl#Prog() abort
@@ -44,12 +27,7 @@ function! provider#perl#Require(host) abort
   endif
 
   let prog = provider#perl#Prog()
-  let args = [s:prog]
-
-  if exists('g:perl_host_args')
-    call extend(args, g:perl_host_args)
-  endif
-  call extend(args, ['-e', 'use Neovim::Ext; start_host();'])
+  let args = [s:prog, '-e', 'use Neovim::Ext; start_host();']
 
   " Collect registered perl plugins into args
   let perl_plugins = remote#host#PluginsForHost(a:host.name)
