@@ -38,6 +38,11 @@ sub nvim_shutdown_hook :ATTR(CODE,BEGIN)
 	$package->_add_shutdown_hook ($sub, @$data);
 }
 
+sub nvim_rpc_export :ATTR(CODE,BEGIN)
+{
+	my ($package, $symbol, $sub, $attr, $data) = @_;
+	$package->_add_rpc_export ($sub, @$data);
+}
 
 
 sub get_specs
@@ -199,6 +204,33 @@ sub get_shutdown_hooks
 
 
 
+sub _add_rpc_export
+{
+	my ($package, $symbol, $name, %options) = @_;
+
+	$options{sync} //= 0;
+
+	no strict 'refs';
+	push @{$package.'::rpc_exports'},
+	{
+		type => 'rpc_export',
+		name => $name,
+		symbol => $symbol,
+		options => \%options,
+	};
+}
+
+
+
+sub get_rpc_exports
+{
+	my ($package) = @_;
+	no strict 'refs';
+	return @{$package.'::rpc_exports'};
+}
+
+
+
 sub new
 {
 	my ($this, $nvim, $host) = @_;
@@ -243,6 +275,10 @@ Subroutine attribute to export a subroutine as a Vim autocmd.
 
 Subroutine attribute to export a subroutine as a Vim function.
 
+=head2 nvim_rpc_export( )
+
+Subroutine attribute to export a subroutine as an RPC export.
+
 =head2 nvim_shutdown_hook( )
 
 Subroutine attribute to export a subroutine as a shutdown hook.
@@ -262,6 +298,10 @@ Get all exported autocmds for the plugin.
 =head2 get_shutdown_hooks( )
 
 Get all shutdown hooks for the plugin.
+
+=head2 get_rpc_exports( )
+
+Get all the RPC exports for the plugin.
 
 =head2 get_specs( )
 
