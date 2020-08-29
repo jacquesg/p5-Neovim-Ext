@@ -401,6 +401,15 @@ sub err_write
 
 
 
+
+sub err_writeln
+{
+	my ($self, $msg, @args) = @_;
+	return $self->request ('nvim_err_writeln', $msg, @args);
+}
+
+
+
 sub quit
 {
 	my ($self, $quit_command) = @_;
@@ -496,10 +505,15 @@ Execute a single ex command.
 
 Execute a single ex command and return the output.
 
-=head2 err_write( $msg, @args)
+=head2 err_write( $msg )
 
-Print C<$msg> as an error message. The message is buffered and wont display
-until a linefeed is sent.
+Print C<$msg> as an error message. Does not append a newline and won't be displayed
+if a linefeed is not sent.
+
+=head2 err_writeln( $msg )
+
+Print C<$msg> as an error message. Appends a newline so the buffer is flushed
+and displayed.
 
 =head2 eval( $string, @args )
 
