@@ -2,6 +2,8 @@ Revision history for Neovim-Ext
 
 {{$NEXT}}
 
+0.03      2020-08-29 22:09:45+01:00 Europe/London
+
  - Support for :perl, :perldo, :perlfile and perleval()
 
 0.02      2019-12-24 17:35:26+00:00 Europe/London
