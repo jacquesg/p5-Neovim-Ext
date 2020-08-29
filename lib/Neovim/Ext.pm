@@ -315,6 +315,15 @@ sub list_runtime_paths
 
 
 
+
+sub list_uis
+{
+	my ($this) = @_;
+	return $this->request ('nvim_list_uis');
+}
+
+
+
 sub foreach_rtp
 {
 	my ($this, $cb) = @_;
@@ -533,6 +542,10 @@ lowest level input buffer and the call is not deferred.
 =head2 list_runtime_paths( )
 
 Return a list reference of paths contained in the 'runtimepath' option.
+
+=head2 list_uis( )
+
+Gets a list of attached UIs.
 
 =head2 next_message( )
 
