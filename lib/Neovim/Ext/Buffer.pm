@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Tie::Array;
 use Neovim::Ext::Remote;
+use Neovim::Ext::Range;
 
 our @ISA = (qw/Neovim::Ext::Remote Tie::Array/);
 
@@ -118,6 +119,15 @@ sub mark
 }
 
 
+
+
+sub range
+{
+	my ($this, $start, $end) = @_;
+	return Neovim::Ext::Range->new ($this, $start, $end);
+}
+
+
 =head1 NAME
 
 Neovim::Ext::Buffer - Neovim Buffer class
@@ -146,6 +156,10 @@ A remote Nvim buffer. A C<Neovim::Ext::Buffer> instance is a tied array referenc
 =head2 mark( $name )
 
 Return the row and column for a named mark.
+
+=head2 range( $start, $end )
+
+Return a C<Neovim::Ext::Range> which represents part of the buffer.
 
 =head2 name( [$name] )
 

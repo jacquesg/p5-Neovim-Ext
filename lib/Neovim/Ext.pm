@@ -18,6 +18,7 @@ use Neovim::Ext::RemoteSequence;
 use Neovim::Ext::Tabpage;
 use Neovim::Ext::Window;
 use Neovim::Ext::Plugin::Host;
+use Neovim::Ext::Tie::Stream;
 
 __PACKAGE__->mk_accessors (qw/session channel_id metadata types api
 	vars vvars options buffers windows tabpages current funcs lua err_cb/);
@@ -45,12 +46,37 @@ sub from_session
 
 sub _setup_logging
 {
-	my ($name) = @_;
+	my ($name, $nvim) = @_;
 
-	if ($ENV{NVIM_PERL_LOG_FILE})
+	if ($name eq 'script')
 	{
-		*SAVESTDERR = *STDERR;
-		open *STDERR, '>', $ENV{NVIM_PERL_LOG_FILE};
+		# Redirect STDERR
+		tie (*STDERR => 'Neovim::Ext::Tie::Stream', sub
+			{
+				my ($data) = @_;
+				$data .= "\n" if (index ($data, "\n") == -1);
+				$nvim->err_write ($data, async_ => 1);
+			}
+		);
+
+		# Redirect STDOUT
+		my $buffer;
+		open NEWSTDOUT, '>', \$buffer;
+		select NEWSTDOUT;
+		tie (*NEWSTDOUT => 'Neovim::Ext::Tie::Stream', sub
+			{
+				my ($data) = @_;
+				$data .= "\n" if (index ($data, "\n") == -1);
+				$nvim->out_write ($data, async_ => 1);
+			}
+		);
+	}
+	else
+	{
+		if ($ENV{NVIM_PERL_LOG_FILE})
+		{
+			open *STDERR, '>', $ENV{NVIM_PERL_LOG_FILE};
+		}
 	}
 }
 
@@ -67,10 +93,22 @@ sub start_host
 		push @plugins, $plugin;
 	}
 
-	_setup_logging ('rplugin');
-
 	$session //= Neovim::Ext::MsgPack::RPC::stdio_session();
 	my $nvim = from_session ($session);
+
+	if (scalar (@plugins) == 1 && $plugins[0] eq 'ScriptHost.pm')
+	{
+		# Special case: the legacy host
+		my $legacyHostPlugin = $INC{'Neovim/Ext/Plugin/Host.pm'};
+		$legacyHostPlugin =~ s/Host/ScriptHost/g;
+		@plugins = ($legacyHostPlugin);
+
+		_setup_logging ('script', $nvim);
+	}
+	else
+	{
+		_setup_logging ('rplugin', $nvim);
+	}
 
 	my $host = Neovim::Ext::Plugin::Host->new ($nvim);
 	$host->start (keys (%{{ map { $_ => 1 } @plugins }}))
