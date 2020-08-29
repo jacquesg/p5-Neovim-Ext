@@ -178,8 +178,24 @@ sub _on_request
 {
 	my ($this, $name, $args, $response) = @_;
 
-	my $rv = $this->request_cb->($name, $args);
-	$response->send ($rv);
+	eval
+	{
+		my $rv = $this->request_cb->($name, $args);
+		$response->send ($rv);
+	};
+
+	if ($@)
+	{
+		if (ref ($@) && ref ($@) eq 'Neovim::Ext::ErrorResponse')
+		{
+			my $e = $@;
+			$response->send ($e->{msg}, 1);
+		}
+		else
+		{
+			$response->send ("Unhandled exception: $@", 1);
+		}
+	}
 }
 
 
