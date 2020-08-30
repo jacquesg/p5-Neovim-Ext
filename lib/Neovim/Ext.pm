@@ -50,12 +50,20 @@ sub _setup_logging
 
 	if ($name eq 'script')
 	{
+		my $stderr;
+		if ($ENV{NVIM_PERL_LOG_FILE})
+		{
+			open $stderr, '>', $ENV{NVIM_PERL_LOG_FILE};
+		}
+
 		# Redirect STDERR
 		tie (*STDERR => 'Neovim::Ext::Tie::Stream', sub
 			{
 				my ($data) = @_;
 				$data .= "\n" if (index ($data, "\n") == -1);
 				$nvim->err_write ($data, async_ => 1);
+
+				print $stderr $data if ($stderr);
 			}
 		);
 
