@@ -37,6 +37,8 @@ sub perl_execute :nvim_rpc_export('perl_execute', sync => 1)
 	{
 		die Neovim::Ext::ErrorResponse->new ($@);
 	}
+
+	return undef;
 }
 
 sub perl_execute_file :nvim_rpc_export('perl_execute_file', sync => 1)
@@ -53,6 +55,7 @@ sub perl_execute_file :nvim_rpc_export('perl_execute_file', sync => 1)
 	}
 
 	$this->perl_execute ($script, $range_start, $range_stop);
+	return undef;
 }
 
 sub perl_do_range :nvim_rpc_export('perl_do_range', sync => 1)
@@ -80,6 +83,7 @@ sub perl_do_range :nvim_rpc_export('perl_do_range', sync => 1)
 
 		tied (@{$this->nvim->current->buffer})->api->set_lines ($sstart, $sstop, 1, \@newlines);
 	}
+	return undef;
 }
 
 sub perl_eval :nvim_rpc_export('perl_eval', sync => 1)
