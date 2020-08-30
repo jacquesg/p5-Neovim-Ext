@@ -2,6 +2,8 @@ Revision history for Neovim-Ext
 
 {{$NEXT}}
 
+0.04      2020-08-30 20:00:15+01:00 Europe/London
+
  - Added Buffer/Window/Tabpage methods:
     + get_bynumber
  - Added a legacy VIM compatibility layer
