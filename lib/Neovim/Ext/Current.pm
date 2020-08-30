@@ -8,7 +8,7 @@ use Neovim::Ext::RemoteApi;
 use Neovim::Ext::RemoteMap;
 use Neovim::Ext::RemoteSequence;
 
-__PACKAGE__->mk_accessors (qw/session/);
+__PACKAGE__->mk_accessors (qw/session range/);
 
 my %fields;
 

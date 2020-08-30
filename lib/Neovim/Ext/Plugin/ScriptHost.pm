@@ -5,20 +5,34 @@ use warnings;
 use List::Util qw/min/;
 use base 'Neovim::Ext::Plugin';
 use Neovim::Ext::ErrorResponse;
+use Neovim::Ext::VIMCompat::Buffer;
+use Neovim::Ext::VIMCompat::Window;
 
 __PACKAGE__->mk_accessors (qw/current/);
 __PACKAGE__->register;
 
+BEGIN
+{
+	eval "package VIM;\n use Neovim::Ext::VIMCompat;\n;1;\n";
+};
+
+our $VIM;
+
+
+sub new
+{
+	my ($this, $nvim, $host) = @_;
+
+	$VIM = $nvim;
+
+	return $this->SUPER::new ($nvim, $host);
+}
 
 sub perl_execute :nvim_rpc_export('perl_execute', sync => 1)
 {
 	my ($this, $script, $range_start, $range_stop) = @_;
 
-	# Bringe $current, $vim and $nvim into lexical scope
-	my $current = $this->_get_range ($range_start, $range_stop);
-	my ($vim, $nvim) = ($this->nvim, $this->nvim);
-
-	eval "package main;\n$script;1\n";
+	$this->_eval ($range_start, $range_stop, $script);
 	if ($@)
 	{
 		die Neovim::Ext::ErrorResponse->new ($@);
@@ -45,38 +59,26 @@ sub perl_do_range :nvim_rpc_export('perl_do_range', sync => 1)
 {
 	my ($this, $start, $stop, $code) = @_;
 
-	my $sub = sub
-	{
-		my ($linenr, $line) = @_;
-		local $_ = $line;
-		eval "package main;\n$code;1\n";
-		return $_;
-	};
-
-	# Bringe $vim and $nvim into lexical scope
-	my $current = $this->_get_range ($start, $stop);
-	my ($vim, $nvim) = ($this->nvim, $this->nvim);
-
 	$start -= 1;
 
 	while ($start < $stop)
 	{
 		my $sstart = $start;
 		my $sstop = min ($start + 5000, $stop);
-		my $lines = tied (@{$vim->current->buffer})->api->get_lines ($sstart, $sstop, 1);
+		my $lines = tied (@{$this->nvim->current->buffer})->api->get_lines ($sstart, $sstop, 1);
 
 		my @newlines;
 		my $linenr = $sstart + 1;
 		foreach my $line (@$lines)
 		{
-			my $result = $sub->($linenr, $line);
+			my $result = $this->_eval ($start, $stop, $code, $line, $linenr);
 			push @newlines, $result;
 			++$linenr;
 		}
 
 		$start = $sstop;
 
-		tied (@{$nvim->current->buffer})->api->set_lines ($sstart, $sstop, 1, \@newlines);
+		tied (@{$this->nvim->current->buffer})->api->set_lines ($sstart, $sstop, 1, \@newlines);
 	}
 }
 
@@ -96,13 +98,43 @@ sub perl_chdir :nvim_rpc_export('perl_chdir', sync => 0)
 	chdir ($cwd);
 }
 
-sub _get_range
+sub _eval
 {
-	my ($this, $start, $stop) = @_;
+	my ($this, $start, $stop, $code, $line, $linenr) = @_;
 
+	# Bringe $vim and $nvim into lexical scope
 	my $current = $this->nvim->current;
-	$current->{range} = tied (@{$current->buffer})->range ($start, $stop);
-	return $current;
+	my ($vim, $nvim) = ($this->nvim, $this->nvim);
+
+	$current->range (tied (@{$current->buffer})->range ($start, $stop));
+
+	my $curbuf = Neovim::Ext::VIMCompat::Buffer->new ($current->buffer);
+	my $curwin = Neovim::Ext::VIMCompat::Window->new ($current->window);
+
+	$main::curbuf = $curbuf;
+	$main::curwin = $curwin;
+
+	local $_ = $line if ($line);
+
+	my $script =
+		"package main;\n".
+		"no strict;\n".
+		"no warnings;\n";
+
+	if (defined ($line) && defined ($linenr))
+	{
+		$script .=
+			"my \$line = \"$line\";\n".
+			"my \$linenr = $linenr;\n".
+			"\$_ = \$line;\n";
+	}
+
+	$script .=
+		"$code;\n".
+		"1;\n";
+
+	eval $script;
+	return $_;
 }
 
 =head1 NAME
@@ -112,9 +144,6 @@ Neovim::Ext::Plugin::ScriptHost - Neovim Legacy perl Plugin
 =head1 SYNOPSIS
 
 	use Neovim::Ext;
-
-	my $host = Neovim::Ext::Plugin::Host->new ($nvim);
-	$host->start ('/path/to/Plugin1.pm', '/path/to/Plugin2.pm');
 
 =head1 METHODS
 
