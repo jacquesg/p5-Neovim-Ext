@@ -2,6 +2,10 @@ Revision history for Neovim-Ext
 
 {{$NEXT}}
 
+ - Added Buffer/Window/Tabpage methods:
+    + get_bynumber
+ - Added a legacy VIM compatibility layer
+
 0.03      2020-08-29 22:09:45+01:00 Europe/London
 
  - Support for :perl, :perldo, :perlfile and perleval()
