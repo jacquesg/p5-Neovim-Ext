@@ -83,7 +83,15 @@ sub _normalise_index
 
 =head1 NAME
 
-A remote Nvim buffer range. A C<Neovim::Ext::Range> instance is a tied array reference.
+Neovim::Ext::Range - Neovim Buffer range class
+
+=head1 SYNPOSIS
+
+	use Neovim::Ext;
+
+=head1 DESCRIPTION
+
+A buffer range for a C<Neovim::Ext::Buffer>.
 
 =cut
 
