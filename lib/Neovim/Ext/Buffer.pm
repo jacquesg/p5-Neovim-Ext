@@ -53,6 +53,17 @@ sub STORE
 
 
 
+sub SPLICE
+{
+	my ($this, $offset, $length, @list) = @_;
+
+	$offset //= 0;
+	$length //= $this->request ('nvim_buf_line_count');
+	$this->request ('nvim_buf_set_lines', $offset, $offset+$length, 0, [map { "$_" } @list]);
+}
+
+
+
 sub STORESIZE
 {
 	my ($this, $count) = @_;
