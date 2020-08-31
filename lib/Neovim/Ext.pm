@@ -5,6 +5,7 @@ use warnings;
 use base qw/Class::Accessor/;
 use Carp;
 use Exporter qw/import/;
+use Scalar::Util qw/blessed/;
 use Neovim::Ext::MsgPack::RPC;
 use Neovim::Ext::Common qw/walk/;
 use Neovim::Ext::Buffer;
@@ -441,7 +442,7 @@ sub _to_nvim
 {
 	my ($this, $obj) = @_;
 
-	if (ref ($obj) && $obj->isa ('Neovim::Ext::Remote'))
+	if (ref ($obj) && blessed ($obj) && $obj->isa ('Neovim::Ext::Remote'))
 	{
 		return $obj->code_data;
 	}
