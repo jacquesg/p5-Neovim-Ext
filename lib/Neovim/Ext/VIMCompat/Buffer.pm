@@ -71,18 +71,11 @@ sub Delete
 {
 	my ($this, $start, $end) = @_;
 
-	my $count = 1;
 	if (defined ($end) && $end > $start)
 	{
-		if ($end > scalar (@{$this->buffer}))
-		{
-			$end = scalar (@{$this->buffer});
-		}
-
-		$count = $end - $start + 1;
+		splice (@{$this->buffer}, $start-1, $end-1);
 	}
-
-	while ($count--)
+	else
 	{
 		delete $this->buffer->[$start-1];
 	}
@@ -108,11 +101,13 @@ sub Set
 
 	if (scalar (@lines))
 	{
-		foreach my $line (@lines)
+		my $count = $this->Count();
+		while (($start + scalar (@lines) - 1) > $count)
 		{
-			$this->buffer->[$start-1] = $line;
-			++$start;
+			pop @lines;
 		}
+
+		splice (@{$this->buffer}, $start-1, scalar (@lines), @lines);
 	}
 }
 
