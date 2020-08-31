@@ -7,6 +7,7 @@ use Neovim::Ext::VIMCompat::Buffer;
 use Neovim::Ext::VIMCompat::Window;
 
 our @EXPORT = qw/
+	Blob
 	Msg
 	SetOption
 	DoCommand
@@ -45,6 +46,14 @@ sub DoCommand
 
 	my $vim = $Neovim::Ext::Plugin::ScriptHost::VIM;
 	$vim->command ($cmd);
+}
+
+
+
+sub Blob
+{
+	my ($blob) = @_;
+	return "0z".uc (unpack ("H*", $blob));
 }
 
 
