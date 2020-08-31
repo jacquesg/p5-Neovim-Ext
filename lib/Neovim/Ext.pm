@@ -175,7 +175,16 @@ sub run_loop
 
 	$err_cb //= sub
 	{
-		print STDERR @_;
+		my ($exception) = @_;
+
+		if (ref ($exception) && ref ($exception) eq 'Neovim::Ext::ErrorResponse')
+		{
+			print STDERR $exception->{msg};
+		}
+		else
+		{
+			print STDERR $exception;
+		}
 	};
 
 	$this->err_cb ($err_cb);
