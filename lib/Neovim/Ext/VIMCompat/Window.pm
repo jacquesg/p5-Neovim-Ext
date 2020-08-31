@@ -42,7 +42,13 @@ sub Buffer
 sub Cursor
 {
 	my ($this, $row, $col) = @_;
-	$this->window->cursor ($row, $col);
+
+	if (defined ($row) || defined ($col))
+	{
+		$this->window->cursor ([$row, $col]);
+	}
+
+	return @{$this->window->cursor};
 }
 
 =head1 NAME

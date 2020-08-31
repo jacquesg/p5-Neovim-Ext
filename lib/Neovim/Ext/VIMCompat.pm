@@ -106,11 +106,18 @@ sub Buffers
 		my @all = @{$vim->buffers};
 		foreach my $name (@names)
 		{
-			my $real = $vim->eval ('bufname ("'.$name.'")');
-			my ($buffer) = grep { tied (@{$_})->name eq $real } @all;
-			if ($buffer)
+			my $other = $vim->eval ('bufname ("'.$name.'")');
+
+			foreach (@all)
 			{
-				push @buffers, $buffer;
+				my $b = tied (@{$_})->name;
+				my $other2 = $vim->eval ('bufname ("'.$b.'")');
+
+				if ($b eq $name || $other2 eq $other)
+				{
+					push @buffers, $_;
+					last;
+				}
 			}
 		}
 	}
@@ -174,6 +181,10 @@ A compatibility layer for the legacy VIM perl interface.
 =head2 Msg( $msg )
 
 Display the message C<$msg>.
+
+=head2 Blob( $scalar )
+
+Return a VIM blobl literal string 0zXXXX for $scalar.
 
 =head2 SetOption( $option )
 

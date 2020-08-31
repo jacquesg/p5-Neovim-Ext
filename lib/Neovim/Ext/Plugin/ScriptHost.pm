@@ -20,7 +20,6 @@ BEGIN
 our $VIM;
 our $curbuf;
 our $curwin;
-our $_;
 our $line;
 our $linenr;
 our $current;
@@ -38,7 +37,6 @@ sub new
 	$obj->env (Eval::Safe->new());
 	$obj->env->share ('$curbuf');
 	$obj->env->share ('$curwin');
-	$obj->env->share ('$_');
 	$obj->env->share ('$line');
 	$obj->env->share ('$linenr');
 	$obj->env->share ('$current');
@@ -84,25 +82,24 @@ sub perl_do_range :nvim_rpc_export('perl_do_range', sync => 1)
 
 	$start -= 1;
 
+	my $buffer = tied (@{$this->nvim->current->buffer});
 	while ($start < $stop)
 	{
-		my $sstart = $start;
-		my $sstop = min ($start + 5000, $stop);
-		my $lines = tied (@{$this->nvim->current->buffer})->api->get_lines ($sstart, $sstop, 1);
+		my $lines = $buffer->api->get_lines ($start, $start+1, 1);
 
-		my @newlines;
-		my $linenr = $sstart + 1;
-		foreach my $line (@$lines)
-		{
-			my $result = $this->_eval ($start, $stop, $code, $line, $linenr);
-			push @newlines, $result;
-			++$linenr;
-		}
+		$this->_setup_current ($start, $start, $lines->[0], $start+1);
+		my $result = $this->env->eval ("local \$_ = \$line; $code; \$_") // '';
 
-		$start = $sstop;
+		$buffer->api->set_lines ($start, $start+1, 1, [$result]);
 
-		tied (@{$this->nvim->current->buffer})->api->set_lines ($sstart, $sstop, 1, \@newlines);
+		++$start;
+
+		# The number of lines in the buffer could have reduced and $stop
+		# could now point past the end, readjust.
+		my $count = scalar (@{$this->nvim->current->buffer});
+		$stop = min ($count, $stop);
 	}
+
 	return undef;
 }
 
@@ -122,11 +119,10 @@ sub perl_chdir :nvim_rpc_export('perl_chdir', sync => 0)
 
 sub _eval
 {
-	my ($this, $start, $stop, $code, $line_, $linenr_) = @_;
+	my ($this, $start, $stop, $code) = @_;
 
-	$this->_setup_current ($start, $stop, $line_, $linenr_);
+	$this->_setup_current ($start, $stop);
 	$this->env->eval ($code);
-	return $_;
 }
 
 sub _setup_current
@@ -143,7 +139,6 @@ sub _setup_current
 	$main::curbuf = $curbuf;
 	$main::curwin = $curwin;
 
-	$_ = $line_;
 	$line = $line_;
 	$linenr = $linenr_;
 }

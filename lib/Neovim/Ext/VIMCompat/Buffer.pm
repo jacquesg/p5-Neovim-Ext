@@ -25,7 +25,15 @@ sub new
 sub Name
 {
 	my ($this) = @_;
-	return tied (@{$this->buffer})->name;
+
+	my $name = tied (@{$this->buffer})->name;
+	if ($name)
+	{
+		my $vim = $Neovim::Ext::Plugin::ScriptHost::VIM;
+		return $vim->eval ('bufname ("'.$name.'")');
+	}
+
+	return $name;
 }
 
 
@@ -86,6 +94,11 @@ sub Delete
 sub Append
 {
 	my ($this, $start, @lines) = @_;
+
+	if (scalar (@lines) == 1 && ref ($lines[0]) eq 'ARRAY')
+	{
+		@lines = @{$lines[0]};
+	}
 
 	if (scalar (@lines))
 	{
