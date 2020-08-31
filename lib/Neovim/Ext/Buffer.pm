@@ -48,7 +48,7 @@ sub FETCH
 sub STORE
 {
 	my ($this, $index, $value) = @_;
-	$this->request ('nvim_buf_set_lines', $index, $index+1, 0, defined ($value) ? [$value] : []);
+	$this->request ('nvim_buf_set_lines', $index, $index+1, 0, defined ($value) ? ["$value"] : []);
 }
 
 
