@@ -7,8 +7,9 @@ use base 'Neovim::Ext::Plugin';
 use Neovim::Ext::ErrorResponse;
 use Neovim::Ext::VIMCompat::Buffer;
 use Neovim::Ext::VIMCompat::Window;
+use Eval::Safe;
 
-__PACKAGE__->mk_accessors (qw/current/);
+__PACKAGE__->mk_accessors (qw/current env/);
 __PACKAGE__->register;
 
 BEGIN
@@ -17,6 +18,14 @@ BEGIN
 };
 
 our $VIM;
+our $curbuf;
+our $curwin;
+our $_;
+our $line;
+our $linenr;
+our $current;
+our $vim;
+our $nvim;
 
 
 sub new
@@ -25,7 +34,18 @@ sub new
 
 	$VIM = $nvim;
 
-	return $this->SUPER::new ($nvim, $host);
+	my $obj = $this->SUPER::new ($nvim, $host);
+	$obj->env (Eval::Safe->new());
+	$obj->env->share ('$curbuf');
+	$obj->env->share ('$curwin');
+	$obj->env->share ('$_');
+	$obj->env->share ('$line');
+	$obj->env->share ('$linenr');
+	$obj->env->share ('$current');
+	$obj->env->share ('$vim');
+	$obj->env->share ('$nvim');
+
+	return $obj;
 }
 
 sub perl_execute :nvim_rpc_export('perl_execute', sync => 1)
@@ -90,17 +110,8 @@ sub perl_eval :nvim_rpc_export('perl_eval', sync => 1)
 {
 	my ($this, $expr) = @_;
 
-	# Bringe $current, $vim and $nvim into lexical scope
-	my $current = $this->nvim->current;
-	my ($vim, $nvim) = ($this->nvim, $this->nvim);
-
-	my $curbuf = Neovim::Ext::VIMCompat::Buffer->new ($current->buffer);
-	my $curwin = Neovim::Ext::VIMCompat::Window->new ($current->window);
-
-	$main::curbuf = $curbuf;
-	$main::curwin = $curwin;
-
-	return eval $expr;
+	$this->_setup_current();
+	return $this->env->eval ($expr) // 0;
 }
 
 sub perl_chdir :nvim_rpc_export('perl_chdir', sync => 0)
@@ -111,41 +122,30 @@ sub perl_chdir :nvim_rpc_export('perl_chdir', sync => 0)
 
 sub _eval
 {
-	my ($this, $start, $stop, $code, $line, $linenr) = @_;
+	my ($this, $start, $stop, $code, $line_, $linenr_) = @_;
 
-	# Bringe $vim and $nvim into lexical scope
-	my $current = $this->nvim->current;
-	my ($vim, $nvim) = ($this->nvim, $this->nvim);
+	$this->_setup_current ($start, $stop, $line_, $linenr_);
+	$this->env->eval ($code);
+	return $_;
+}
 
-	$current->range (tied (@{$current->buffer})->range ($start, $stop));
+sub _setup_current
+{
+	my ($this, $start, $stop, $line_, $linenr_) = @_;
 
-	my $curbuf = Neovim::Ext::VIMCompat::Buffer->new ($current->buffer);
-	my $curwin = Neovim::Ext::VIMCompat::Window->new ($current->window);
+	$vim = $this->nvim;
+	$nvim = $this->nvim;
 
+	$current = $this->nvim->current;
+	$current->range (tied (@{$current->buffer})->range ($start, $stop)) if (defined ($start) && defined ($stop));
+	$curbuf = Neovim::Ext::VIMCompat::Buffer->new ($current->buffer);
+	$curwin = Neovim::Ext::VIMCompat::Window->new ($current->window);
 	$main::curbuf = $curbuf;
 	$main::curwin = $curwin;
 
-	local $_ = $line if ($line);
-
-	my $script =
-		"package main;\n".
-		"no strict;\n".
-		"no warnings;\n";
-
-	if (defined ($line) && defined ($linenr))
-	{
-		$script .=
-			"my \$line = \"$line\";\n".
-			"my \$linenr = $linenr;\n".
-			"\$_ = \$line;\n";
-	}
-
-	$script .=
-		"$code;\n".
-		"1;\n";
-
-	eval $script;
-	return $_;
+	$_ = $line_;
+	$line = $line_;
+	$linenr = $linenr_;
 }
 
 =head1 NAME
