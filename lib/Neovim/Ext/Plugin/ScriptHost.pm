@@ -91,7 +91,14 @@ sub perl_eval :nvim_rpc_export('perl_eval', sync => 1)
 	my ($this, $expr) = @_;
 
 	# Bringe $current, $vim and $nvim into lexical scope
+	my $current = $this->nvim->current;
 	my ($vim, $nvim) = ($this->nvim, $this->nvim);
+
+	my $curbuf = Neovim::Ext::VIMCompat::Buffer->new ($current->buffer);
+	my $curwin = Neovim::Ext::VIMCompat::Window->new ($current->window);
+
+	$main::curbuf = $curbuf;
+	$main::curwin = $curwin;
 
 	return eval $expr;
 }
