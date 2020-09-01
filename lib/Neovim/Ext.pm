@@ -61,10 +61,16 @@ sub _setup_logging
 		tie (*STDERR => 'Neovim::Ext::Tie::Stream', sub
 			{
 				my ($data) = @_;
-				$data .= "\n" if (index ($data, "\n") == -1);
-				$nvim->err_write ($data, async_ => 1);
 
-				print $stderr $data if ($stderr);
+				if ($stderr)
+				{
+					print $stderr $data if ($stderr);
+				}
+				else
+				{
+					$data .= "\n" if (substr ($data, -1) ne "\n");
+					$nvim->err_write ($data, async_ => 1);
+				}
 			}
 		);
 
@@ -75,7 +81,7 @@ sub _setup_logging
 		tie (*NEWSTDOUT => 'Neovim::Ext::Tie::Stream', sub
 			{
 				my ($data) = @_;
-				$data .= "\n" if (index ($data, "\n") == -1);
+				$data .= "\n" if (substr ($data, -1) ne "\n");
 				$nvim->out_write ($data, async_ => 1);
 			}
 		);
