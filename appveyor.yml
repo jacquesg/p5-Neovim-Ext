@@ -19,6 +19,9 @@ install:
  - set PATH=%PERL530%\perl\bin;%PERL530%\perl\site\bin;%PERL530%\c\bin;%OLDPATH%
  - cd C:\projects\p5-Neovim-Ext
  - cpanm --notest --quiet Dist::Zilla Dist::Zilla::PluginBundle::Author::JACQUESG App::Ack
+ - cpanm --quiet --notest Pod::Coverage::TrustPod
+ - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+ - cpanm --quiet --notest Dist::Zilla::App::Command::cover
  - dzil authordeps --missing | ack -v "inc::" | cpanm --notest --quiet
  - dzil listdeps --missing | cpanm --notest --quiet
 
