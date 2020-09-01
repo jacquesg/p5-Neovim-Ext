@@ -7,16 +7,16 @@ install:
  - del "%SOURCES%\*.msi"
 
  # download
- - set PERL522PACKAGE=strawberry-perl-5.22.3.1-64bit-portable.zip
+ - set PERL530PACKAGE=strawberry-perl-5.30.3.1-64bit-portable.zip
 
- - if not exist "%SOURCES%\%PERL522PACKAGE%" curl -fsS -o "%SOURCES%\%PERL522PACKAGE%" http://strawberryperl.com/download/5.22.3.1/%PERL522PACKAGE%
+ - if not exist "%SOURCES%\%PERL530PACKAGE%" curl -fsS -o "%SOURCES%\%PERL530PACKAGE%" http://strawberryperl.com/download/5.30.3.1/%PERL530PACKAGE%
 
- - set PERL522=C:\projects\perl522
+ - set PERL530=C:\projects\perl530
 
- - 7z x "%SOURCES%\%PERL522PACKAGE%" -o"%PERL522%"
+ - 7z x "%SOURCES%\%PERL530PACKAGE%" -o"%PERL530%"
 
  - set OLDPATH=%PATH%
- - set PATH=%PERL522%\perl\bin;%PERL522%\perl\site\bin;%PERL522%\c\bin;%OLDPATH%
+ - set PATH=%PERL530%\perl\bin;%PERL530%\perl\site\bin;%PERL530%\c\bin;%OLDPATH%
  - cd C:\projects\p5-Neovim-Ext
  - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
