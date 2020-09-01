@@ -2,6 +2,11 @@ Revision history for Neovim-Ext
 
 {{$NEXT}}
 
+ - VIM compatibility layer fixes
+ - Require perl 5.22 or newer
+ - Added VIMCompat methods:
+    + Blob
+
 0.04      2020-08-30 20:00:15+01:00 Europe/London
 
  - Added Buffer/Window/Tabpage methods:
