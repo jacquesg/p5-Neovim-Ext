@@ -18,22 +18,22 @@ my %available =
 (
 	'linux-64'   =>
 	{
-		url => 'https://github.com/neovim/neovim/releases/download/v0.4.3/nvim-linux64.tar.gz',
+		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz',
 		binary => 'nvim-linux64/bin/nvim',
 	},
 	'darwin-64'  =>
 	{
-		url => 'https://github.com/neovim/neovim/releases/download/v0.4.3/nvim-macos.tar.gz',
+		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-macos.tar.gz',
 		binary => 'nvim-osx64/bin/nvim',
 	},
 	'MSWin32-32' =>
 	{
-		url => 'https://github.com/neovim/neovim/releases/download/v0.4.3/nvim-win32.zip',
+		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-win32.zip',
 		binary => 'Neovim/bin/nvim.exe',
 	},
 	'MSWin32-64' =>
 	{
-		url => 'https://github.com/neovim/neovim/releases/download/v0.4.3/nvim-win64.zip',
+		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-win64.zip',
 		binary => 'Neovim/bin/nvim.exe',
 	},
 );
