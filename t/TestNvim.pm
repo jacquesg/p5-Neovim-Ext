@@ -164,10 +164,10 @@ sub start_socket
 
 	$ENV{NVIM_LISTEN_ADDRESS} = $socket;
 
-	my $proc = Proc::Background->new ({die_upon_destroy => 1}, "$binary -u NORC --embed --headless");
+	my $proc = Proc::Background->new ({die_upon_destroy => 1}, "$binary -u NORC --embed --headless --listen $socket");
 	$this->{proc} = $proc;
 
-	my $session = Neovim::Ext::MsgPack::RPC::socket_session ($ENV{NVIM_LISTEN_ADDRESS}, 50, 100);
+	my $session = Neovim::Ext::MsgPack::RPC::socket_session ($socket, 50, 100);
 	return _configure ($session);
 }
 
