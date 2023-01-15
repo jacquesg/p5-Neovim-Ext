@@ -9,7 +9,7 @@ install:
  # download
  - set PERL530PACKAGE=strawberry-perl-5.30.3.1-64bit-portable.zip
 
- - if not exist "%SOURCES%\%PERL530PACKAGE%" curl -fsS -o "%SOURCES%\%PERL530PACKAGE%" http://strawberryperl.com/download/5.30.3.1/%PERL530PACKAGE%
+ - if not exist "%SOURCES%\%PERL530PACKAGE%" curl -fsS -o "%SOURCES%\%PERL530PACKAGE%" https://strawberryperl.com/download/5.30.3.1/%PERL530PACKAGE%
 
  - set PERL530=C:\projects\perl530
 
