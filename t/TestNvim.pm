@@ -24,7 +24,7 @@ my %available =
 	'darwin-64'  =>
 	{
 		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-macos.tar.gz',
-		binary => 'nvim-osx64/bin/nvim',
+		binary => 'nvim-macos/bin/nvim',
 	},
 	'MSWin32-32' =>
 	{
