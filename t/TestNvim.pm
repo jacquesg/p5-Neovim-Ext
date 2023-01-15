@@ -26,15 +26,10 @@ my %available =
 		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-macos.tar.gz',
 		binary => 'nvim-macos/bin/nvim',
 	},
-	'MSWin32-32' =>
-	{
-		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-win32.zip',
-		binary => 'Neovim/bin/nvim.exe',
-	},
 	'MSWin32-64' =>
 	{
 		url => 'https://github.com/neovim/neovim/releases/download/nightly/nvim-win64.zip',
-		binary => 'Neovim/bin/nvim.exe',
+		binary => 'nvim-win64/bin/nvim.exe',
 	},
 );
 
